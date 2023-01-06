@@ -56,7 +56,6 @@ function App() {
       ffmpeg.FS("writeFile", file.name, await fetchFile(file.file));
       inputPaths.push(`file ${file.name}`);
     }
-
     ffmpeg.FS("writeFile", "concat_list.txt", inputPaths.join("\n"));
     await ffmpeg.run(
       "-f",
@@ -69,7 +68,6 @@ function App() {
       "copy",
       "output.mp4"
     );
-
     const data = ffmpeg.FS("readFile", "output.mp4");
     setVideoSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
@@ -81,9 +79,7 @@ function App() {
     setUnderProcess(VIDEO_ENUMS.SUBTITLE);
     await ffmpeg.load();
     ffmpeg.FS("writeFile", "video4.mp4", await fetchFile("/video3.mp4"));
-
     ffmpeg.FS("writeFile", "subtitle.srt", await fetchFile("/subtitle.srt"));
-
     await ffmpeg.run(
       "-i",
       "video4.mp4",
@@ -91,7 +87,6 @@ function App() {
       "subtitles=subtitle.srt",
       "output3.mp4"
     );
-
     const data = ffmpeg.FS("readFile", "output3.mp4");
     setVideoSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
