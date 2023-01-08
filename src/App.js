@@ -15,26 +15,26 @@ const VIDEO_ENUMS = {
 
 function App() {
   const videoEl = useRef(null);
-  const [ffmpeg, setFFmpeg] = useState(null);
+  const [ffmpeg] = useState(
+    createFFmpeg({
+      log: false,
+      progress: (e) => setProgress(e.ratio),
+    })
+  );
   const [progress, setProgress] = useState(0);
   const [videoSrc, setVideoSrc] = useState("");
   const [ogVideoSrc, setOgVideoSrc] = useState("");
   const [underProcess, setUnderProcess] = useState(VIDEO_ENUMS.NONE);
 
   useEffect(() => {
-    setFFmpeg(initializeFFmpeg());
-  }, []);
-
-  const initializeFFmpeg = () => {
-    return createFFmpeg({
-      log: true,
-      progress: (e) => setProgress(e.ratio),
-    });
-  };
+    const LoadFFmpegWasm = async () => {
+      await ffmpeg?.load();
+    };
+    LoadFFmpegWasm();
+  }, [ffmpeg]);
 
   const doTranscode = async () => {
     setUnderProcess(VIDEO_ENUMS.TRANSCODE);
-    await ffmpeg.load();
     ffmpeg.FS("writeFile", "test.txt", await fetchFile("/video4.mp4"));
     await ffmpeg.run("-i", "test.txt", "-vcodec", "copy", "output.mp4");
     const data = ffmpeg.FS("readFile", "output.mp4");
@@ -46,7 +46,6 @@ function App() {
 
   const mergeVideos = async () => {
     setUnderProcess(VIDEO_ENUMS.MERGE);
-    await ffmpeg.load();
     const files = [
       { file: "/video4.mp4", name: "video1.mp4" },
       { file: "/video5.mp4", name: "video2.mp4" },
@@ -77,7 +76,6 @@ function App() {
 
   const addSubtitle = async () => {
     setUnderProcess(VIDEO_ENUMS.SUBTITLE);
-    await ffmpeg.load();
     ffmpeg.FS("writeFile", "video4.mp4", await fetchFile("/video3.mp4"));
     ffmpeg.FS("writeFile", "subtitle.srt", await fetchFile("/subtitle.srt"));
     await ffmpeg.run(
@@ -98,7 +96,6 @@ function App() {
     setUnderProcess(VIDEO_ENUMS.TRIMMING);
     const startTime = "00:05:20";
     const endTime = "00:05:25";
-    await ffmpeg.load();
     ffmpeg.FS("writeFile", "input.mp4", await fetchFile("/video4.mp4"));
 
     // ----------------------------------- trimming by inputting starting point and length
@@ -138,7 +135,6 @@ function App() {
 
   const snipVideo = async () => {
     setUnderProcess(VIDEO_ENUMS.SNIPPING);
-    await ffmpeg.load();
     ffmpeg.FS("writeFile", "video.mp4", await fetchFile("/video4.mp4"));
     // await ffmpeg.run(
     //   "-i",
@@ -171,7 +167,6 @@ function App() {
   };
 
   const handleLoadedMetadata = () => {
-    console.log("videoEl.current", videoEl.current?.video)
     const video = videoEl.current;
     if (!video) return;
     console.log(`The video is ${video.duration} seconds long.`);
