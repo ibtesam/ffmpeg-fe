@@ -36,7 +36,6 @@ const VideoTimelinePicker = () => {
     selectedEnd,
   ]);
 
-  console.log("selectedInterval", selectedInterval[0],  moment());
   const errorHandler = ({ error }) => setError(error);
 
   const onChangeCallback = (selectedInterval) =>

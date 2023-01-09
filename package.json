@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "date-fns": "^2.29.3",
     "moment": "^2.29.4",
     "npm": "^6.14.18",
     "rc-progress": "^3.4.1",
@@ -15,7 +16,7 @@
     "react-bootstrap": "^2.7.0",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
-    "react-video-timelines-slider": "^1.1.7"
+    "react-video-timelines-slider": "git+https://github.com/ibtesam/react-video-timelines-slider.git#commit-ish"
   },
   "scripts": {
     "start": "react-scripts start",

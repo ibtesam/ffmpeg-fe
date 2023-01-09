@@ -11,6 +11,7 @@ const VIDEO_ENUMS = {
   SNIPPING: 3,
   TRIMMING: 4,
   SUBTITLE: 5,
+  SNAP: 7,
 };
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
       progress: (e) => setProgress(e.ratio),
     })
   );
+  const [image, setImage] = useState("");
   const [progress, setProgress] = useState(0);
   const [videoSrc, setVideoSrc] = useState("");
   const [ogVideoSrc, setOgVideoSrc] = useState("");
@@ -97,7 +99,6 @@ function App() {
     const startTime = "00:05:20";
     const endTime = "00:05:25";
     ffmpeg.FS("writeFile", "input.mp4", await fetchFile("/video4.mp4"));
-
     // ----------------------------------- trimming by inputting starting point and length
     // await ffmpeg.run(
     //   "-i",
@@ -163,6 +164,22 @@ function App() {
     setVideoSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
     );
+    setUnderProcess(VIDEO_ENUMS.NONE);
+  };
+
+  const createSnap = async () => {
+    setUnderProcess(VIDEO_ENUMS.SNAP);
+
+    ffmpeg.FS("writeFile", "video.mp4", await fetchFile("/video3.mp4"));
+    await ffmpeg.run("-i", "video.mp4", "-vf", "fps=1", "output%06d.png");
+    const data = ffmpeg.FS("readFile", "output.png");
+
+    setImage(
+      URL.createObjectURL(new Blob([data.buffer], { type: "image/png" }))
+    );
+    // setOgVideoSrc(
+    //   URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
+    // );
     setUnderProcess(VIDEO_ENUMS.NONE);
   };
 
@@ -281,8 +298,23 @@ function App() {
             </>
           )}
         </div>
+        <div>
+          <button onClick={createSnap}>Create Snap</button>
+          {underProcess === VIDEO_ENUMS.SNAP && (
+            <>
+              <p>Progress: {(progress * 100).toFixed(0)}%</p>
+              <Line
+                percent={progress * 100}
+                strokeWidth={8}
+                strokeColor="#32a852"
+                trailWidth={8}
+                trailColor="#32a85288"
+              />
+            </>
+          )}
+        </div>
       </div>
-
+      <img src={image} width={100} height={50} />
       <VideoTimelinePicker />
     </div>
   );
