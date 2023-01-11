@@ -3,7 +3,9 @@ import { Line } from "rc-progress";
 import React, { useEffect, useRef, useState } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import VideoTimelinePicker from "./VideoTimelinePicker";
+import { utilService } from "./utils";
 
+const { convertSeconds } = utilService;
 const VIDEO_ENUMS = {
   NONE: 0,
   TRANSCODE: 1,
@@ -23,6 +25,12 @@ function App() {
     })
   );
   const [image, setImage] = useState("");
+  const [videoRuntime, setVideoRuntime] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    milliseconds: 0,
+  });
   const [progress, setProgress] = useState(0);
   const [videoSrc, setVideoSrc] = useState("");
   const [ogVideoSrc, setOgVideoSrc] = useState("");
@@ -185,8 +193,19 @@ function App() {
 
   const handleLoadedMetadata = () => {
     const video = videoEl.current;
+    const videoDuration = convertSeconds(video.duration);
+    setVideoRuntime((prev) => {
+      return {
+        ...prev,
+        hours: videoDuration.hours,
+        minutes: videoDuration.minutes,
+        seconds: videoDuration.seconds,
+      };
+    });
     if (!video) return;
-    console.log(`The video is ${video.duration} seconds long.`);
+    console.log(
+      `The video is ${video.duration} - ${convertSeconds(video.duration)} long.`
+    );
   };
 
   return (
@@ -314,8 +333,8 @@ function App() {
           )}
         </div>
       </div>
-      <img src={image} width={100} height={50} />
-      <VideoTimelinePicker />
+      {/* <img src={image} width={100} height={50} /> */}
+      <VideoTimelinePicker videoDuration={videoRuntime} />
     </div>
   );
 }

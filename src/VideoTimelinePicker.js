@@ -29,11 +29,12 @@ const disabledIntervals = [
   { start: getTodayAtSpecificHour(20), end: getTodayAtSpecificHour(24) },
 ];
 
-const VideoTimelinePicker = () => {
+const VideoTimelinePicker = ({ videoDuration }) => {
+  const { hours, minutes, seconds, milliseconds } = videoDuration;
   const [error, setError] = useState(false);
   const [selectedInterval, setSelectedInterval] = useState([
-    selectedStart,
-    selectedEnd,
+    startTime,
+    endTime,
   ]);
 
   const errorHandler = ({ error }) => setError(error);
@@ -46,13 +47,19 @@ const VideoTimelinePicker = () => {
       error={error}
       ticksNumber={20}
       step={1}
-      // selectedInterval={[moment("12:00:00"), moment("14:30:14")]}
-      timelineInterval={[moment(), endTime]}
+      selectedInterval={[
+        getTodayAtSpecificHour(),
+        getTodayAtSpecificHour(0, 0, 4),
+      ]}
+      timelineInterval={[
+        getTodayAtSpecificHour(),
+        getTodayAtSpecificHour(hours, minutes, seconds, milliseconds),
+      ]}
       onUpdateCallback={errorHandler}
       onChangeCallback={() => onChangeCallback}
       disabledIntervals={disabledIntervals}
-      //   formatTick={(ms) => format(new Date(ms), "HH:mm:ss")}
-      //   formatTooltip={(ms) => format(new Date(ms), "HH:mm:ss.SSS")}
+      formatTick={(ms) => moment(ms).format("HH:mm:ss")}
+      formatTooltip={(ms) => moment(ms).format("HH:mm:ss.SSS")}
       showTooltip={true}
       showTimelineError={false}
     />
