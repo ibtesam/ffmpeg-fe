@@ -22,6 +22,6 @@ function convertSeconds(seconds) {
 function getSeconds(time) {
   time = moment(time).format("HH:mm:ss");
   time = time.split(":");
-  const seconds = parseInt(time[0]) * 3600 + parseInt(time[1]) * 60 + parseInt(2);
+  const seconds = parseInt(time[0]) * 3600 + parseInt(time[1]) * 60 + parseInt(time[2]);
   return seconds;
 }

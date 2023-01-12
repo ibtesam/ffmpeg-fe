@@ -267,6 +267,10 @@ const App = () => {
     }, 1000);
   };
 
+  const updateTime = (seconds) => {
+    videoEl.current.currentTime = seconds;
+  };
+
   return (
     <div className="App">
       <div
@@ -295,10 +299,12 @@ const App = () => {
             title="Processed"
             onLoadedMetadata={handleLoadedMetadata}
           />
+          <div style={{marginTop: "40px"}}/>
           <VideoTimelinePicker
             list={trimList}
             videoDuration={videoRuntime}
             setSelectedInterval={setSelectedInterval}
+            updateTime={updateTime}
           />
           <div className="display-flex">
             {trimList.map((item, index) => {

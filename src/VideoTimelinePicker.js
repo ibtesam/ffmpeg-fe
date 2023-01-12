@@ -19,17 +19,27 @@ const getTodayAtSpecificTime = (
     milliseconds: milliseconds,
   });
 
-const VideoTimelinePicker = ({ videoDuration, setSelectedInterval, list }) => {
+const VideoTimelinePicker = ({
+  videoDuration,
+  setSelectedInterval,
+  list,
+  updateTime,
+}) => {
   const { hours, minutes, seconds, milliseconds } = videoDuration;
 
   const [error, setError] = useState(false);
-  const errorHandler = ({ error }) => setError(error);
+  const onUpdateCallback = (e) => {
+    console.log("e", e)
+    if (e.time[0] != "Invalid Date") {
+      updateTime(getSeconds(e.time[0]));
+      updateTime(getSeconds(e.time[1]));
+    } 
+  };
 
   const onChangeCallback = (selectedInterval) => {
     if (selectedInterval[0] != "Invalid Date") {
       const start = selectedInterval[0];
       const end = selectedInterval[1];
-
       setSelectedInterval({
         start,
         end,
@@ -57,10 +67,8 @@ const VideoTimelinePicker = ({ videoDuration, setSelectedInterval, list }) => {
         getTodayAtSpecificTime(hours, minutes, seconds, milliseconds),
       ]}
       disabledIntervals={list}
-      onUpdateCallback={errorHandler}
+      onUpdateCallback={onUpdateCallback}
       onChangeCallback={onChangeCallback}
-      // formatTick={(ms) => moment(ms).format("HH:mm:ss")}
-      // formatTooltip={(ms) => moment(ms).format("HH:mm:ss.SSS")}
       formatTick={(ms) => format(ms, "HH:mm:ss")}
       formatTooltip={(ms) => format(ms, "HH:mm:ss.SSS")}
     />
