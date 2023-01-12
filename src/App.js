@@ -7,6 +7,7 @@ import video from "./video4.mp4";
 import { utilService } from "./utils";
 
 const { convertSeconds } = utilService;
+
 const VIDEO_ENUMS = {
   NONE: 0,
   TRANSCODE: 1,
@@ -215,15 +216,55 @@ const App = () => {
     }
   };
 
+  const recursiveListing = (list, item, index) => {
+    if (
+      item.length + 1 == index ||
+      (index - 1 >= 0 && item[index - 1].endTime == "00:16:17")
+    ) {
+      return;
+    }
+    recursiveListing(list, item, index + 1);
+    if (index == 0 && item[index].startTime != "00:00:00") {
+      list.push({
+        ...item[index],
+        endTime: item[index].startTime,
+        startTime: "00:00:00",
+      });
+    } else if (index > 0) {
+      list.push({
+        ...item[index],
+        endTime: index == item.length ? "00:16:17" : item[index].startTime,
+        startTime: item[index - 1].endTime,
+      });
+    }
+    return;
+  };
+
   const handleTrimAndMerge = async () => {
     let trimmedVideos = [];
-    for (let i = 0; i < trimList.length; i++) {
-      const url = await trimVideo(trimList[i].startTime, trimList[i].endTime);
+    let mutatedList = [];
+
+    recursiveListing(mutatedList, trimList, 0);
+
+    mutatedList = mutatedList.sort((a, b) => {
+      return (
+        new Date("1970/01/01 " + a.startTime) -
+        new Date("1970/01/01 " + b.startTime)
+      );
+    });
+
+    for (let i = 0; i < mutatedList.length; i++) {
+      const url = await trimVideo(
+        mutatedList[i].startTime,
+        mutatedList[i].endTime
+      );
       trimmedVideos.push({ file: url, name: `video${i}.mp4` });
     }
 
     mergeVideos(trimmedVideos);
-    setTrimList([]);
+    setTimeout(() => {
+      setTrimList([]);
+    }, 1000);
   };
 
   return (

@@ -1,6 +1,5 @@
-import moment from "moment";
 import React, { useState } from "react";
-import { set } from "date-fns";
+import { set, format } from "date-fns";
 import TimeRange from "react-video-timelines-slider";
 import { utilService } from "./utils";
 
@@ -30,12 +29,12 @@ const VideoTimelinePicker = ({ videoDuration, setSelectedInterval, list }) => {
     if (selectedInterval[0] != "Invalid Date") {
       const start = selectedInterval[0];
       const end = selectedInterval[1];
-      
+
       setSelectedInterval({
         start,
         end,
-        startTime: moment(start).format("HH:mm:ss"),
-        endTime: moment(end).format("HH:mm:ss"),
+        startTime: format(start, "HH:mm:ss"),
+        endTime: format(end, "HH:mm:ss"),
         startingSeconds: getSeconds(start),
         endingSeconds: getSeconds(end),
       });
@@ -60,8 +59,10 @@ const VideoTimelinePicker = ({ videoDuration, setSelectedInterval, list }) => {
       disabledIntervals={list}
       onUpdateCallback={errorHandler}
       onChangeCallback={onChangeCallback}
-      formatTick={(ms) => moment(ms).format("HH:mm:ss")}
-      formatTooltip={(ms) => moment(ms).format("HH:mm:ss.SSS")}
+      // formatTick={(ms) => moment(ms).format("HH:mm:ss")}
+      // formatTooltip={(ms) => moment(ms).format("HH:mm:ss.SSS")}
+      formatTick={(ms) => format(ms, "HH:mm:ss")}
+      formatTooltip={(ms) => format(ms, "HH:mm:ss.SSS")}
     />
   );
 };
