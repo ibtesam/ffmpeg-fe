@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import { endOfToday, set } from "date-fns";
 import moment from "moment";
+import React, { useState } from "react";
+import { set } from "date-fns";
 import TimeRange from "react-video-timelines-slider";
+import { utilService } from "./utils";
 
 const now = new Date();
-const getTodayAtSpecificHour = (
+const { getSeconds } = utilService;
+
+const getTodayAtSpecificTime = (
   hour = 0,
   minutes = 0,
   seconds = 0,
@@ -17,51 +20,48 @@ const getTodayAtSpecificHour = (
     milliseconds: milliseconds,
   });
 
-const selectedStart = getTodayAtSpecificHour(12);
-const selectedEnd = getTodayAtSpecificHour(14);
-
-const startTime = getTodayAtSpecificHour(7);
-const endTime = endOfToday();
-
-const disabledIntervals = [
-  { start: getTodayAtSpecificHour(16), end: getTodayAtSpecificHour(17) },
-  { start: getTodayAtSpecificHour(7), end: getTodayAtSpecificHour(12) },
-  { start: getTodayAtSpecificHour(20), end: getTodayAtSpecificHour(24) },
-];
-
-const VideoTimelinePicker = ({ videoDuration }) => {
+const VideoTimelinePicker = ({ videoDuration, setSelectedInterval, list }) => {
   const { hours, minutes, seconds, milliseconds } = videoDuration;
-  const [error, setError] = useState(false);
-  const [selectedInterval, setSelectedInterval] = useState([
-    startTime,
-    endTime,
-  ]);
 
+  const [error, setError] = useState(false);
   const errorHandler = ({ error }) => setError(error);
 
-  const onChangeCallback = (selectedInterval) =>
-    setSelectedInterval(selectedInterval);
+  const onChangeCallback = (selectedInterval) => {
+    if (selectedInterval[0] != "Invalid Date") {
+      const start = selectedInterval[0];
+      const end = selectedInterval[1];
+      
+      setSelectedInterval({
+        start,
+        end,
+        startTime: moment(start).format("HH:mm:ss"),
+        endTime: moment(end).format("HH:mm:ss"),
+        startingSeconds: getSeconds(start),
+        endingSeconds: getSeconds(end),
+      });
+    }
+  };
 
   return (
     <TimeRange
-      error={error}
-      ticksNumber={20}
       step={1}
-      selectedInterval={[
-        getTodayAtSpecificHour(),
-        getTodayAtSpecificHour(0, 0, 4),
-      ]}
-      timelineInterval={[
-        getTodayAtSpecificHour(),
-        getTodayAtSpecificHour(hours, minutes, seconds, milliseconds),
-      ]}
-      onUpdateCallback={errorHandler}
-      onChangeCallback={() => onChangeCallback}
-      disabledIntervals={disabledIntervals}
-      formatTick={(ms) => moment(ms).format("HH:mm:ss")}
-      formatTooltip={(ms) => moment(ms).format("HH:mm:ss.SSS")}
+      error={error}
+      ticksNumber={10}
       showTooltip={true}
       showTimelineError={false}
+      selectedInterval={[
+        getTodayAtSpecificTime(),
+        getTodayAtSpecificTime(0, 0, 4),
+      ]}
+      timelineInterval={[
+        getTodayAtSpecificTime(),
+        getTodayAtSpecificTime(hours, minutes, seconds, milliseconds),
+      ]}
+      disabledIntervals={list}
+      onUpdateCallback={errorHandler}
+      onChangeCallback={onChangeCallback}
+      formatTick={(ms) => moment(ms).format("HH:mm:ss")}
+      formatTooltip={(ms) => moment(ms).format("HH:mm:ss.SSS")}
     />
   );
 };

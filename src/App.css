@@ -18,15 +18,15 @@ button:hover {
   width: 150px;
   font-size: 1em;
   padding: 15px;
-  background-color: #00ff37A2;
+  background-color: #00ff37a2;
   color: #fff;
   border-radius: 5px;
-  border: 2px solid #00ff37A2;
+  border: 2px solid #00ff37a2;
   cursor: pointer;
 }
 video {
   border-radius: 10px;
-  border: 1px solid #00ff37A2;
+  border: 1px solid #00ff37a2;
 }
 .App-logo {
   height: 40vmin;
@@ -61,4 +61,53 @@ video {
   to {
     transform: rotate(360deg);
   }
+}
+
+.video-wrapper {
+  width: 800px;
+}
+
+.react_time_range__time_range_container {
+  padding: 30px 0 0 !important;
+  height: 70px;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.button-wrapper {
+  display: flex;
+  width: 60%;
+  justify-content: space-between;
+  margin: 50px auto 0;
+}
+
+.video-btn-wrapper {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 20px;
+}
+
+.react_time_range__track__disabled {
+  background: rgba(214, 0, 11, 0.5) !important;
+}
+
+.trimmed-video-box {
+  padding: 10px;
+  margin-top: 20px;
+  background-color: rgba(214, 0, 11, 0.8);
+  width: 150px;
+  margin-right: 5px;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.trimmed-video-box:hover {
+  background-color: rgba(214, 0, 11, 1);
+}
+.progress-bar-wrapper {
+  margin-top: 20px;
+}
+.display-flex {
+  display: flex;
 }

@@ -3,6 +3,7 @@ import { Line } from "rc-progress";
 import React, { useEffect, useRef, useState } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import VideoTimelinePicker from "./VideoTimelinePicker";
+import video from "./video4.mp4";
 import { utilService } from "./utils";
 
 const { convertSeconds } = utilService;
@@ -16,23 +17,30 @@ const VIDEO_ENUMS = {
   SNAP: 7,
 };
 
-function App() {
-  const videoEl = useRef(null);
+const App = () => {
   const [ffmpeg] = useState(
     createFFmpeg({
       log: false,
       progress: (e) => setProgress(e.ratio),
     })
   );
-  const [image, setImage] = useState("");
+
+  const [selectedInterval, setSelectedInterval] = useState({
+    startTime: null,
+    endTime: null,
+  });
   const [videoRuntime, setVideoRuntime] = useState({
     hours: 0,
     minutes: 0,
     seconds: 0,
     milliseconds: 0,
   });
+
+  const videoEl = useRef(null);
+  const [image, setImage] = useState();
   const [progress, setProgress] = useState(0);
-  const [videoSrc, setVideoSrc] = useState("");
+  const [trimList, setTrimList] = useState([]);
+  const [videoSrc, setVideoSrc] = useState(video);
   const [ogVideoSrc, setOgVideoSrc] = useState("");
   const [underProcess, setUnderProcess] = useState(VIDEO_ENUMS.NONE);
 
@@ -54,12 +62,12 @@ function App() {
     setUnderProcess(VIDEO_ENUMS.NONE);
   };
 
-  const mergeVideos = async () => {
+  const mergeVideos = async (files) => {
     setUnderProcess(VIDEO_ENUMS.MERGE);
-    const files = [
-      { file: "/video4.mp4", name: "video1.mp4" },
-      { file: "/video5.mp4", name: "video2.mp4" },
-    ];
+    // const files = [
+    //   { file: "/video4.mp4", name: "video1.mp4" },
+    //   { file: "/video5.mp4", name: "video2.mp4" },
+    // ];
     const inputPaths = [];
     for (const file of files) {
       ffmpeg.FS("writeFile", file.name, await fetchFile(file.file));
@@ -102,10 +110,8 @@ function App() {
     setUnderProcess(VIDEO_ENUMS.NONE);
   };
 
-  const trimVideo = async () => {
+  const trimVideo = async (startTime = "00:05:20", endTime = "00:05:25") => {
     setUnderProcess(VIDEO_ENUMS.TRIMMING);
-    const startTime = "00:05:20";
-    const endTime = "00:05:25";
     ffmpeg.FS("writeFile", "input.mp4", await fetchFile("/video4.mp4"));
     // ----------------------------------- trimming by inputting starting point and length
     // await ffmpeg.run(
@@ -136,10 +142,11 @@ function App() {
       "output1.mp4"
     );
     const data = ffmpeg.FS("readFile", "output1.mp4");
-    setVideoSrc(
-      URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
-    );
+    // setVideoSrc(
+    //   URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
+    // );
     setUnderProcess(VIDEO_ENUMS.NONE);
+    return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
   };
 
   const snipVideo = async () => {
@@ -185,9 +192,6 @@ function App() {
     setImage(
       URL.createObjectURL(new Blob([data.buffer], { type: "image/png" }))
     );
-    // setOgVideoSrc(
-    //   URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
-    // );
     setUnderProcess(VIDEO_ENUMS.NONE);
   };
 
@@ -203,9 +207,23 @@ function App() {
       };
     });
     if (!video) return;
-    console.log(
-      `The video is ${video.duration} - ${convertSeconds(video.duration)} long.`
-    );
+  };
+
+  const handleAddToTrimList = () => {
+    if (selectedInterval.startTime != null) {
+      setTrimList((prev) => [...prev, selectedInterval]);
+    }
+  };
+
+  const handleTrimAndMerge = async () => {
+    let trimmedVideos = [];
+    for (let i = 0; i < trimList.length; i++) {
+      const url = await trimVideo(trimList[i].startTime, trimList[i].endTime);
+      trimmedVideos.push({ file: url, name: `video${i}.mp4` });
+    }
+
+    mergeVideos(trimmedVideos);
+    setTrimList([]);
   };
 
   return (
@@ -217,31 +235,62 @@ function App() {
           justifyContent: "space-evenly",
         }}
       >
-        <video
-          controls
-          width={800}
-          height={450}
-          src={ogVideoSrc}
-          title="Original"
-        />
-        <video
-          controls
-          width={800}
-          height={450}
-          ref={videoEl}
-          src={videoSrc}
-          title="Processed"
-          onLoadedMetadata={handleLoadedMetadata}
-        />
+        {/* 
+          <video
+            controls
+            width={800}
+            height={450}
+            src={ogVideoSrc}
+            title="Original"
+          /> 
+        */}
+        <div className="video-wrapper">
+          <video
+            controls
+            width={800}
+            height={450}
+            ref={videoEl}
+            src={videoSrc}
+            title="Processed"
+            onLoadedMetadata={handleLoadedMetadata}
+          />
+          <VideoTimelinePicker
+            list={trimList}
+            videoDuration={videoRuntime}
+            setSelectedInterval={setSelectedInterval}
+          />
+          <div className="display-flex">
+            {trimList.map((item, index) => {
+              return (
+                <div
+                  className="trimmed-video-box"
+                  key={`${item.startTime + item.endTime}-${index}`}
+                >
+                  Trim No: {index + 1}
+                </div>
+              );
+            })}
+          </div>
+          <div className="video-btn-wrapper">
+            <button onClick={handleAddToTrimList}>Add to trim list</button>
+            <button onClick={handleTrimAndMerge}>Trim Video</button>
+          </div>
+          <div className="progress-bar-wrapper">
+            <>
+              <p>Progress: {(progress * 100).toFixed(0)}%</p>
+              <Line
+                percent={progress * 100}
+                strokeWidth={8}
+                strokeColor="#32a852"
+                trailWidth={8}
+                trailColor="#32a85288"
+              />
+            </>
+          </div>
+        </div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          width: "60%",
-          justifyContent: "space-between",
-          margin: "50px auto 0",
-        }}
-      >
+
+      {/* <div className="button-wrapper">
         <div>
           <button onClick={doTranscode}>Start</button>
           {underProcess === VIDEO_ENUMS.TRANSCODE && (
@@ -332,11 +381,9 @@ function App() {
             </>
           )}
         </div>
-      </div>
-      {/* <img src={image} width={100} height={50} /> */}
-      <VideoTimelinePicker videoDuration={videoRuntime} />
+      </div> */}
     </div>
   );
-}
+};
 
 export default App;
