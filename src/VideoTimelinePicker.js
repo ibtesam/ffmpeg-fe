@@ -26,14 +26,16 @@ const VideoTimelinePicker = ({
   updateTime,
 }) => {
   const { hours, minutes, seconds, milliseconds } = videoDuration;
-
+  // const [disabledTrack, setDisabledTrack] = useState();
   const [error, setError] = useState(false);
   const onUpdateCallback = (e) => {
-    console.log("e", e)
-    if (e.time[0] != "Invalid Date") {
-      updateTime(getSeconds(e.time[0]));
-      updateTime(getSeconds(e.time[1]));
-    } 
+    // if (e.time[0] != "Invalid Date") {
+    //   let disabledTrack = null;
+    //   if (disabledTrack != e.time[0]) {
+    //     updateTime(getSeconds(e.time[0]));
+    //     disabledTrack = e.time[0];
+    //   } else updateTime(getSeconds(e.time[1]));
+    // }
   };
 
   const onChangeCallback = (selectedInterval) => {

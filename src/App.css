@@ -96,18 +96,38 @@ video {
   margin-top: 20px;
   background-color: rgba(214, 0, 11, 0.8);
   width: 150px;
-  margin-right: 5px;
+  margin-right: 15px;
   border-radius: 5px;
   color: #fff;
   cursor: pointer;
+  position: relative;
 }
 
 .trimmed-video-box:hover {
   background-color: rgba(214, 0, 11, 1);
+}
+
+.cross-icon {
+  position: absolute;
+  right: -13px;
+  top: -13px;
 }
 .progress-bar-wrapper {
   margin-top: 20px;
 }
 .display-flex {
   display: flex;
+}
+.m-0 {
+  margin: 0;
+}
+.custom-progress {
+  height: 50px;
+  position: absolute;
+  bottom: 15px;
+}
+
+.progress-timeline-wrapper {
+  margin-top: 40px;
+  position: relative;
 }

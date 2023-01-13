@@ -5,6 +5,7 @@ import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import VideoTimelinePicker from "./VideoTimelinePicker";
 import video from "./video4.mp4";
 import { utilService } from "./utils";
+import CrossIcon from "./cross.svg";
 
 const { convertSeconds } = utilService;
 
@@ -26,6 +27,7 @@ const App = () => {
     })
   );
 
+  const [videoDuration, setVideoDuration] = useState(0);
   const [selectedInterval, setSelectedInterval] = useState({
     startTime: null,
     endTime: null,
@@ -43,6 +45,7 @@ const App = () => {
   const [trimList, setTrimList] = useState([]);
   const [videoSrc, setVideoSrc] = useState(video);
   const [ogVideoSrc, setOgVideoSrc] = useState("");
+  const [selectedTrimItem, setSelectedTrimItem] = useState(null);
   const [underProcess, setUnderProcess] = useState(VIDEO_ENUMS.NONE);
 
   useEffect(() => {
@@ -198,6 +201,7 @@ const App = () => {
 
   const handleLoadedMetadata = () => {
     const video = videoEl.current;
+    setVideoDuration(video.duration);
     const videoDuration = convertSeconds(video.duration);
     setVideoRuntime((prev) => {
       return {
@@ -212,8 +216,20 @@ const App = () => {
 
   const handleAddToTrimList = () => {
     if (selectedInterval.startTime != null) {
-      setTrimList((prev) => [...prev, selectedInterval]);
+      setTrimList((prev) => [
+        ...prev,
+        {
+          ...selectedInterval,
+          id: trimList.length > 0 ? trimList[trimList.length - 1].id + 1 : 0,
+        },
+      ]);
     }
+  };
+
+  const handleRemoveItem = (id) => {
+    let newList = [...trimList];
+    newList = newList.filter((item) => item.id != id);
+    setTrimList(newList);
   };
 
   const recursiveListing = (list, item, index) => {
@@ -271,6 +287,59 @@ const App = () => {
     videoEl.current.currentTime = seconds;
   };
 
+  const playTrimmedPart = (item) => {
+    videoEl.current.currentTime = item.startingSeconds;
+    videoEl.current.play();
+    setSelectedTrimItem(item);
+  };
+
+  const [sliderColor, setSliderColor] = useState("#ddd");
+  const [sliderPosition, setSliderPosition] = useState(0);
+
+  const handleListenTimeUpdate = (e) => {
+    if (selectedTrimItem) {
+      if (videoEl.current.currentTime >= selectedTrimItem.endingSeconds) {
+        videoEl.current.pause();
+      }
+      const currentTime = e.target.currentTime;
+      if (
+        currentTime >= selectedTrimItem.startingSeconds &&
+        currentTime <= selectedTrimItem.endingSeconds
+      ) {
+        setSliderColor("red");
+      } else {
+        setSliderColor("#ddd");
+      }
+      setSliderPosition(
+        (currentTime / e.target.duration -
+          selectedTrimItem.startingSeconds / e.target.duration) *
+          100
+      );
+    }
+  };
+
+  const [drag, setDrag] = useState(false);
+
+  const handleMouseDown = (e) => {
+    setDrag(true);
+  };
+  const handleMouseMove = (e) => {
+    if (selectedTrimItem) {
+      if (
+        videoEl.current.currentTime >= selectedTrimItem.endingSeconds &&
+        drag
+      ) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  // const handleSeeked = (e) => {
+  //   if (videoEl.current.currentTime >= selectedTrimItem.endingSeconds) {
+  //     videoEl.current.ontimeupdate = null;
+  //   }
+  // }
+  
   return (
     <div className="App">
       <div
@@ -294,18 +363,34 @@ const App = () => {
             controls
             width={800}
             height={450}
+            onTimeUpdate={handleListenTimeUpdate}
             ref={videoEl}
             src={videoSrc}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
             title="Processed"
             onLoadedMetadata={handleLoadedMetadata}
           />
-          <div style={{marginTop: "40px"}}/>
-          <VideoTimelinePicker
-            list={trimList}
-            videoDuration={videoRuntime}
-            setSelectedInterval={setSelectedInterval}
-            updateTime={updateTime}
-          />
+          <div className="progress-timeline-wrapper">
+            <div
+              style={{
+                marginLeft: `${
+                  selectedTrimItem
+                    ? (selectedTrimItem.startingSeconds / videoDuration) * 100
+                    : 0
+                }%`,
+                width: `${sliderPosition}%`,
+                backgroundColor: sliderColor,
+              }}
+              className="custom-progress"
+            />
+            <VideoTimelinePicker
+              list={trimList}
+              videoDuration={videoRuntime}
+              setSelectedInterval={setSelectedInterval}
+              updateTime={updateTime}
+            />
+          </div>
           <div className="display-flex">
             {trimList.map((item, index) => {
               return (
@@ -313,7 +398,16 @@ const App = () => {
                   className="trimmed-video-box"
                   key={`${item.startTime + item.endTime}-${index}`}
                 >
-                  Trim No: {index + 1}
+                  <p className="m-0" onClick={() => playTrimmedPart(item)}>
+                    Trim No: {item.id + 1}
+                  </p>
+                  <img
+                    className="cross-icon"
+                    src={CrossIcon}
+                    width={25}
+                    height={25}
+                    onClick={() => handleRemoveItem(item.id)}
+                  />
                 </div>
               );
             })}
