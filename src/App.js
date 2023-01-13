@@ -47,6 +47,8 @@ const App = () => {
   const [ogVideoSrc, setOgVideoSrc] = useState("");
   const [selectedTrimItem, setSelectedTrimItem] = useState(null);
   const [underProcess, setUnderProcess] = useState(VIDEO_ENUMS.NONE);
+  const [sliderColor, setSliderColor] = useState("#ddd");
+  const [sliderPosition, setSliderPosition] = useState(0);
 
   useEffect(() => {
     const LoadFFmpegWasm = async () => {
@@ -230,6 +232,9 @@ const App = () => {
     let newList = [...trimList];
     newList = newList.filter((item) => item.id != id);
     setTrimList(newList);
+    setSelectedTrimItem(null);
+    setSliderPosition(0);
+    setSliderColor("#ddd");
   };
 
   const recursiveListing = (list, item, index) => {
@@ -288,13 +293,16 @@ const App = () => {
   };
 
   const playTrimmedPart = (item) => {
-    videoEl.current.currentTime = item.startingSeconds;
-    videoEl.current.play();
-    setSelectedTrimItem(item);
+    if (!selectedTrimItem) {
+      videoEl.current.currentTime = item.startingSeconds;
+      videoEl.current.play();
+      setSelectedTrimItem(item);
+    } else {
+      setSelectedTrimItem(null);
+      setSliderPosition(0);
+      setSliderColor("#ddd");
+    }
   };
-
-  const [sliderColor, setSliderColor] = useState("#ddd");
-  const [sliderPosition, setSliderPosition] = useState(0);
 
   const handleListenTimeUpdate = (e) => {
     if (selectedTrimItem) {
@@ -339,7 +347,7 @@ const App = () => {
   //     videoEl.current.ontimeupdate = null;
   //   }
   // }
-  
+
   return (
     <div className="App">
       <div
@@ -363,12 +371,12 @@ const App = () => {
             controls
             width={800}
             height={450}
-            onTimeUpdate={handleListenTimeUpdate}
             ref={videoEl}
             src={videoSrc}
+            title="Processed"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
-            title="Processed"
+            onTimeUpdate={handleListenTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
           />
           <div className="progress-timeline-wrapper">
@@ -395,7 +403,11 @@ const App = () => {
             {trimList.map((item, index) => {
               return (
                 <div
-                  className="trimmed-video-box"
+                  className={`trimmed-video-box ${
+                    item.id == selectedTrimItem?.id
+                      ? "selected-video-box"
+                      : null
+                  }`}
                   key={`${item.startTime + item.endTime}-${index}`}
                 >
                   <p className="m-0" onClick={() => playTrimmedPart(item)}>
@@ -413,8 +425,12 @@ const App = () => {
             })}
           </div>
           <div className="video-btn-wrapper">
-            <button onClick={handleAddToTrimList}>Add to trim list</button>
-            <button onClick={handleTrimAndMerge}>Trim Video</button>
+            <button onClick={handleAddToTrimList} disabled={selectedTrimItem}>
+              Add to trim list
+            </button>
+            <button onClick={handleTrimAndMerge} disabled={selectedTrimItem}>
+              Trim Video
+            </button>
           </div>
           <div className="progress-bar-wrapper">
             <>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { set, format } from "date-fns";
 import TimeRange from "react-video-timelines-slider";
 import { utilService } from "./utils";
+import moment from "moment";
 
 const now = new Date();
 const { getSeconds } = utilService;
@@ -26,16 +27,20 @@ const VideoTimelinePicker = ({
   updateTime,
 }) => {
   const { hours, minutes, seconds, milliseconds } = videoDuration;
-  // const [disabledTrack, setDisabledTrack] = useState();
+  const [disabledTrack, setDisabledTrack] = useState();
   const [error, setError] = useState(false);
   const onUpdateCallback = (e) => {
-    // if (e.time[0] != "Invalid Date") {
-    //   let disabledTrack = null;
-    //   if (disabledTrack != e.time[0]) {
-    //     updateTime(getSeconds(e.time[0]));
-    //     disabledTrack = e.time[0];
-    //   } else updateTime(getSeconds(e.time[1]));
-    // }
+    if (e.time[0] != "Invalid Date") {
+      setDisabledTrack(e.time[0]);
+      if (moment(disabledTrack).add(1, "seconds") != e.time[0]) {
+        console.log(
+          moment(disabledTrack).add(1, "seconds") == e.time[0],
+          moment(disabledTrack).add(1, "second1"),
+          e.time[0]
+        );
+        updateTime(getSeconds(e.time[0]));
+      } else updateTime(getSeconds(e.time[1]));
+    }
   };
 
   const onChangeCallback = (selectedInterval) => {
