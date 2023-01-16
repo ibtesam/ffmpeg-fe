@@ -24,6 +24,12 @@ button:hover {
   border: 2px solid #00ff37a2;
   cursor: pointer;
 }
+button:disabled {
+  background-color: #fff;
+  color: rgb(165, 165, 165);
+  cursor: not-allowed;
+}
+
 video {
   border-radius: 10px;
   border: 1px solid #00ff37a2;
@@ -89,12 +95,13 @@ video {
 
 .react_time_range__track__disabled {
   background: rgba(214, 0, 11, 0.5) !important;
+  border: 0 !important;
 }
 
 .trimmed-video-box {
   padding: 10px;
   margin-top: 20px;
-  background-color: rgba(214, 0, 11, 0.8);
+  background-color: rgba(214, 0, 11, 0.6);
   width: 150px;
   margin-right: 15px;
   border-radius: 5px;
@@ -130,4 +137,9 @@ video {
 .progress-timeline-wrapper {
   margin-top: 40px;
   position: relative;
+}
+
+.note-sign {
+  color: rgba(214, 0, 11, 0.8);
+  font-size: 0.825em;
 }

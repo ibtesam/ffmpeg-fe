@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { set, format } from "date-fns";
 import TimeRange from "react-video-timelines-slider";
 import { utilService } from "./utils";
@@ -25,26 +25,27 @@ const VideoTimelinePicker = ({
   setSelectedInterval,
   list,
   updateTime,
+  selectedTrim,
 }) => {
   const { hours, minutes, seconds, milliseconds } = videoDuration;
   const [disabledTrack, setDisabledTrack] = useState();
-  const [error, setError] = useState(false);
+  const error = useRef(true);
+
   const onUpdateCallback = (e) => {
-    if (e.time[0] != "Invalid Date") {
+    error.current = e.error;
+    if (e.time[0] != "Invalid Date" && selectedTrim == null) {
       setDisabledTrack(e.time[0]);
-      if (moment(disabledTrack).add(1, "seconds") != e.time[0]) {
-        console.log(
-          moment(disabledTrack).add(1, "seconds") == e.time[0],
-          moment(disabledTrack).add(1, "second1"),
-          e.time[0]
-        );
+      if (
+        moment(disabledTrack).format("HH:mm:ss") !=
+        moment(e.time[0]).format("HH:mm:ss")
+      ) {
         updateTime(getSeconds(e.time[0]));
       } else updateTime(getSeconds(e.time[1]));
     }
   };
 
   const onChangeCallback = (selectedInterval) => {
-    if (selectedInterval[0] != "Invalid Date") {
+    if (selectedInterval[0] != "Invalid Date" && error.current == false) {
       const start = selectedInterval[0];
       const end = selectedInterval[1];
       setSelectedInterval({
@@ -59,26 +60,34 @@ const VideoTimelinePicker = ({
   };
 
   return (
-    <TimeRange
-      step={1}
-      error={error}
-      ticksNumber={10}
-      showTooltip={true}
-      showTimelineError={false}
-      selectedInterval={[
-        getTodayAtSpecificTime(),
-        getTodayAtSpecificTime(0, 0, 4),
-      ]}
-      timelineInterval={[
-        getTodayAtSpecificTime(),
-        getTodayAtSpecificTime(hours, minutes, seconds, milliseconds),
-      ]}
-      disabledIntervals={list}
-      onUpdateCallback={onUpdateCallback}
-      onChangeCallback={onChangeCallback}
-      formatTick={(ms) => format(ms, "HH:mm:ss")}
-      formatTooltip={(ms) => format(ms, "HH:mm:ss.SSS")}
-    />
+    <>
+      <TimeRange
+        step={1}
+        error={error}
+        ticksNumber={10}
+        showTooltip={true}
+        showTimelineError={false}
+        selectedInterval={[
+          getTodayAtSpecificTime(),
+          getTodayAtSpecificTime(0, 0, 4),
+        ]}
+        timelineInterval={[
+          getTodayAtSpecificTime(),
+          getTodayAtSpecificTime(hours, minutes, seconds, milliseconds),
+        ]}
+        disabledIntervals={list}
+        onUpdateCallback={onUpdateCallback}
+        onChangeCallback={onChangeCallback}
+        formatTick={(ms) => format(ms, "HH:mm:ss")}
+        formatTooltip={(ms) => format(ms, "HH:mm:ss.SSS")}
+      />
+
+      {error.current && (
+        <p className="note-sign">
+          *The selected Trim is not valid and might cause issues while merging
+        </p>
+      )}
+    </>
   );
 };
 
