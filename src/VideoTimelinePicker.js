@@ -56,6 +56,8 @@ const VideoTimelinePicker = ({
         startingSeconds: getSeconds(start),
         endingSeconds: getSeconds(end),
       });
+    } else if (selectedInterval[0] != "Invalid Date" && error.current == true) {
+      setSelectedInterval({ startTime: null, endTime: null });
     }
   };
 

@@ -128,7 +128,7 @@ const TrimVideo = () => {
 
   const handleRemoveItem = (id) => {
     let newList = [...trimList];
-    newList = newList.filter((item) => item.id != id);
+    newList = newList.filter((item) => item.id !== id);
     setTrimList(newList);
     setSelectedTrimItem(null);
     setSliderPosition(0);
@@ -137,14 +137,14 @@ const TrimVideo = () => {
 
   const recursiveListing = (list, item, index) => {
     if (
-      item.length + 1 == index ||
+      item.length + 1 === index ||
       (index - 1 >= 0 &&
-        item[index - 1].endTime == convertSeconds(videoTotalDuration).time)
+        item[index - 1].endTime === convertSeconds(videoTotalDuration).time)
     ) {
       return;
     }
     recursiveListing(list, item, index + 1);
-    if (index == 0 && item[index].startTime != "00:00:00") {
+    if (index === 0 && item[index].startTime !== "00:00:00") {
       list.push({
         ...item[index],
         endTime: item[index].startTime,
@@ -154,7 +154,7 @@ const TrimVideo = () => {
       list.push({
         ...item[index],
         endTime:
-          index == item.length
+          index === item.length
             ? convertSeconds(videoTotalDuration).time
             : item[index].startTime,
         startTime: item[index - 1].endTime,
@@ -281,7 +281,7 @@ const TrimVideo = () => {
               return (
                 <div
                   className={`trimmed-video-box ${
-                    item.id == selectedTrimItem?.id
+                    item.id === selectedTrimItem?.id
                       ? "selected-video-box"
                       : null
                   }`}
@@ -291,10 +291,14 @@ const TrimVideo = () => {
                     className="flex-center"
                     onClick={() => handlePlayTrimmedPart(item)}
                   >
-                    <img src={item.id == selectedTrimItem?.id ? pause : play} />
+                    <img
+                      alt="play icon"
+                      src={item.id === selectedTrimItem?.id ? pause : play}
+                    />
                     <p className="m-0">Trim No: {item.id + 1}</p>
                   </span>
                   <img
+                    alt="cross icon"
                     className="cross-icon"
                     src={CrossIcon}
                     width={25}
@@ -314,7 +318,7 @@ const TrimVideo = () => {
             </button>
             <button
               onClick={handleTrimAndMerge}
-              disabled={selectedTrimItem || trimList.length == 0}
+              disabled={selectedTrimItem || trimList.length === 0}
             >
               Trim Video
             </button>
