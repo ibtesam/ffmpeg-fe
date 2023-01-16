@@ -11,19 +11,16 @@ import VideoTimelinePicker from "./VideoTimelinePicker";
 
 import "./App.css";
 
-const { convertSeconds } = utilService;
+const { convertSeconds, getMergeVideoSeconds } = utilService;
 
 const TrimVideo = () => {
   const [ffmpeg] = useState(
     createFFmpeg({
       log: false,
-      progress: (e) => {
-        e.ratio && setProgress(e.ratio);
-      },
+      progress: (e) => setProgress(e),
     })
   );
 
-  const [videoDuration, setVideoDuration] = useState(0);
   const [selectedInterval, setSelectedInterval] = useState({
     startTime: null,
     endTime: null,
@@ -34,13 +31,15 @@ const TrimVideo = () => {
     seconds: 0,
     milliseconds: 0,
   });
-
   const videoEl = useRef(null);
-  const [progress, setProgress] = useState(0);
+  const [message, setMessage] = useState(null);
+  const [progress, setProgress] = useState({ ratio: 0, time: 0 });
   const [trimList, setTrimList] = useState([]);
   const [videoSrc, setVideoSrc] = useState(video);
   const [sliderColor, setSliderColor] = useState("#ddd");
   const [sliderPosition, setSliderPosition] = useState(0);
+  const [mergedVideoSeconds, setMergedSeconds] = useState(1);
+  const [videoTotalDuration, setVideoDuration] = useState(0);
   const [selectedTrimItem, setSelectedTrimItem] = useState(null);
 
   useEffect(() => {
@@ -51,6 +50,7 @@ const TrimVideo = () => {
   }, [ffmpeg]);
 
   const mergeVideos = async (files) => {
+    setMessage("Merging...");
     const inputPaths = [];
     for (const file of files) {
       ffmpeg.FS("writeFile", file.name, await fetchFile(file.file));
@@ -72,9 +72,11 @@ const TrimVideo = () => {
     setVideoSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
     );
+    setMessage(null);
   };
 
-  const trimVideo = async (startTime = "00:05:20", endTime = "00:05:25") => {
+  const trimVideo = async (startTime = "00:00:00", endTime = "00:00:05") => {
+    setMessage("Trimming...");
     ffmpeg.FS("writeFile", "input.mp4", await fetchFile(videoSrc));
     await ffmpeg.run(
       "-ss",
@@ -88,6 +90,7 @@ const TrimVideo = () => {
       "output1.mp4"
     );
     const data = ffmpeg.FS("readFile", "output1.mp4");
+    setMessage(null);
     return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
   };
 
@@ -135,7 +138,8 @@ const TrimVideo = () => {
   const recursiveListing = (list, item, index) => {
     if (
       item.length + 1 == index ||
-      (index - 1 >= 0 && item[index - 1].endTime == "00:16:17")
+      (index - 1 >= 0 &&
+        item[index - 1].endTime == convertSeconds(videoTotalDuration).time)
     ) {
       return;
     }
@@ -149,7 +153,10 @@ const TrimVideo = () => {
     } else if (index > 0) {
       list.push({
         ...item[index],
-        endTime: index == item.length ? "00:16:17" : item[index].startTime,
+        endTime:
+          index == item.length
+            ? convertSeconds(videoTotalDuration).time
+            : item[index].startTime,
         startTime: item[index - 1].endTime,
       });
     }
@@ -168,6 +175,8 @@ const TrimVideo = () => {
         new Date("1970/01/01 " + b.startTime)
       );
     });
+
+    setMergedSeconds(getMergeVideoSeconds(mutatedList));
 
     for (let i = 0; i < mutatedList.length; i++) {
       const url = await trimVideo(
@@ -221,6 +230,10 @@ const TrimVideo = () => {
     }
   };
 
+  const progressCondition =
+    (progress.ratio ? progress.ratio : progress.time / mergedVideoSeconds) *
+    100;
+
   return (
     <div className="App">
       <div
@@ -246,7 +259,8 @@ const TrimVideo = () => {
               style={{
                 marginLeft: `${
                   selectedTrimItem
-                    ? (selectedTrimItem.startingSeconds / videoDuration) * 100
+                    ? (selectedTrimItem.startingSeconds / videoTotalDuration) *
+                      100
                     : 0
                 }%`,
                 width: `${sliderPosition}%`,
@@ -307,9 +321,17 @@ const TrimVideo = () => {
           </div>
           <div className="progress-bar-wrapper">
             <>
-              <p>Progress: {(progress * 100).toFixed(0)}%</p>
+              {message && <p>{message}</p>}
+              <p>
+                {`Progress: ${
+                  progressCondition > 0 && progressCondition <= 100
+                    ? progressCondition.toFixed(0)
+                    : 0
+                }`}
+                %
+              </p>
               <Line
-                percent={progress * 100}
+                percent={progressCondition}
                 strokeWidth={8}
                 strokeColor="#32a852"
                 trailWidth={8}
