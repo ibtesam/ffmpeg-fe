@@ -3,6 +3,8 @@ import { Line } from "rc-progress";
 import React, { useEffect, useRef, useState } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import VideoTimelinePicker from "./VideoTimelinePicker";
+import pause from "./pause.svg";
+import play from "./play.svg";
 import video from "./video4.mp4";
 import { utilService } from "./utils";
 import CrossIcon from "./cross.svg";
@@ -13,7 +15,9 @@ const TrimVideo = () => {
   const [ffmpeg] = useState(
     createFFmpeg({
       log: false,
-      progress: (e) => setProgress(e.ratio),
+      progress: (e) => {
+        e.ratio && setProgress(e.ratio);
+      },
     })
   );
 
@@ -177,11 +181,11 @@ const TrimVideo = () => {
     }, 1000);
   };
 
-  const updateTime = (seconds) => {
+  const handleUpdateTime = (seconds) => {
     videoEl.current.currentTime = seconds;
   };
 
-  const playTrimmedPart = (item) => {
+  const handlePlayTrimmedPart = (item) => {
     if (!selectedTrimItem) {
       videoEl.current.currentTime = item.startingSeconds;
       videoEl.current.play();
@@ -252,7 +256,7 @@ const TrimVideo = () => {
               list={trimList}
               videoDuration={videoRuntime}
               setSelectedInterval={setSelectedInterval}
-              updateTime={updateTime}
+              updateTime={handleUpdateTime}
               selectedTrim={selectedTrimItem}
             />
           </div>
@@ -267,9 +271,13 @@ const TrimVideo = () => {
                   }`}
                   key={`${item.startTime + item.endTime}-${index}`}
                 >
-                  <p className="m-0" onClick={() => playTrimmedPart(item)}>
-                    Trim No: {item.id + 1}
-                  </p>
+                  <span
+                    className="flex-center"
+                    onClick={() => handlePlayTrimmedPart(item)}
+                  >
+                    <img src={item.id == selectedTrimItem?.id ? pause : play} />
+                    <p className="m-0">Trim No: {item.id + 1}</p>
+                  </span>
                   <img
                     className="cross-icon"
                     src={CrossIcon}

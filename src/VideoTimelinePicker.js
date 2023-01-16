@@ -29,7 +29,7 @@ const VideoTimelinePicker = ({
 }) => {
   const { hours, minutes, seconds, milliseconds } = videoDuration;
   const [disabledTrack, setDisabledTrack] = useState();
-  const error = useRef(true);
+  const error = useRef(false);
 
   const onUpdateCallback = (e) => {
     error.current = e.error;
