@@ -1,13 +1,15 @@
-import "./App.css";
 import { Line } from "rc-progress";
-import React, { useEffect, useRef, useState } from "react";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import VideoTimelinePicker from "./VideoTimelinePicker";
-import pause from "./pause.svg";
+import React, { useEffect, useRef, useState } from "react";
+
 import play from "./play.svg";
+import pause from "./pause.svg";
 import video from "./video4.mp4";
-import { utilService } from "./utils";
 import CrossIcon from "./cross.svg";
+import { utilService } from "./utils";
+import VideoTimelinePicker from "./VideoTimelinePicker";
+
+import "./App.css";
 
 const { convertSeconds } = utilService;
 
