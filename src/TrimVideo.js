@@ -69,7 +69,7 @@ const TrimVideo = () => {
   };
 
   const trimVideo = async (startTime = "00:05:20", endTime = "00:05:25") => {
-    ffmpeg.FS("writeFile", "input.mp4", await fetchFile("/video4.mp4"));
+    ffmpeg.FS("writeFile", "input.mp4", await fetchFile(videoSrc));
     await ffmpeg.run(
       "-ss",
       startTime,
