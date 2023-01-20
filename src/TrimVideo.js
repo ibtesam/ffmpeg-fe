@@ -49,6 +49,7 @@ const TrimVideo = () => {
     LoadFFmpegWasm();
   }, [ffmpeg]);
 
+  // ** COMMANDS **
   const mergeVideos = async (files) => {
     setMessage("Merging...");
     const inputPaths = [];
@@ -94,6 +95,7 @@ const TrimVideo = () => {
     return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
   };
 
+  // ** FUNCTION HANDLERS **
   const handleLoadedMetadata = () => {
     const video = videoEl.current;
     setVideoDuration(video.duration);
@@ -230,19 +232,14 @@ const TrimVideo = () => {
     }
   };
 
+  // ** CONDITIONS **
   const progressCondition =
     (progress.ratio ? progress.ratio : progress.time / mergedVideoSeconds) *
     100;
 
   return (
     <div className="App">
-      <div
-        style={{
-          display: "flex",
-          margin: "30px auto",
-          justifyContent: "space-evenly",
-        }}
-      >
+      <div className="container">
         <div className="video-wrapper">
           <video
             controls
