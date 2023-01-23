@@ -152,6 +152,9 @@ video {
 
 .container {
   display: flex;
-  margin: 30px auto;
+  margin: 0 auto;
   justify-content: space-evenly;
+  text-align: center;
+  padding: 90px 0;
+  background-color: #00ff3782;
 }

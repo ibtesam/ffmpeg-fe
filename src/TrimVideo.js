@@ -238,108 +238,104 @@ const TrimVideo = () => {
     100;
 
   return (
-    <div className="App">
-      <div className="container">
-        <div className="video-wrapper">
-          <video
-            controls
-            width={800}
-            height={450}
-            ref={videoEl}
-            src={videoSrc}
-            title="Processed"
-            onTimeUpdate={handleListenTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
+    <div className="container">
+      <div className="video-wrapper">
+        <video
+          controls
+          width={800}
+          height={450}
+          ref={videoEl}
+          src={videoSrc}
+          title="Processed"
+          onTimeUpdate={handleListenTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+        />
+        <div className="progress-timeline-wrapper">
+          <div
+            style={{
+              marginLeft: `${
+                selectedTrimItem
+                  ? (selectedTrimItem.startingSeconds / videoTotalDuration) *
+                    100
+                  : 0
+              }%`,
+              width: `${sliderPosition}%`,
+              backgroundColor: sliderColor,
+            }}
+            className="custom-progress"
           />
-          <div className="progress-timeline-wrapper">
-            <div
-              style={{
-                marginLeft: `${
-                  selectedTrimItem
-                    ? (selectedTrimItem.startingSeconds / videoTotalDuration) *
-                      100
-                    : 0
-                }%`,
-                width: `${sliderPosition}%`,
-                backgroundColor: sliderColor,
-              }}
-              className="custom-progress"
-            />
-            <VideoTimelinePicker
-              list={trimList}
-              videoDuration={videoRuntime}
-              setSelectedInterval={setSelectedInterval}
-              updateTime={handleUpdateTime}
-              selectedTrim={selectedTrimItem}
-            />
-          </div>
-          <div className="display-flex">
-            {trimList.map((item, index) => {
-              return (
-                <div
-                  className={`trimmed-video-box ${
-                    item.id === selectedTrimItem?.id
-                      ? "selected-video-box"
-                      : null
-                  }`}
-                  key={`${item.startTime + item.endTime}-${index}`}
-                >
-                  <span
-                    className="flex-center"
-                    onClick={() => handlePlayTrimmedPart(item)}
-                  >
-                    <img
-                      alt="play icon"
-                      src={item.id === selectedTrimItem?.id ? pause : play}
-                    />
-                    <p className="m-0">Trim No: {item.id + 1}</p>
-                  </span>
-                  <img
-                    alt="cross icon"
-                    className="cross-icon"
-                    src={CrossIcon}
-                    width={25}
-                    height={25}
-                    onClick={() => handleRemoveItem(item.id)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <div className="video-btn-wrapper">
-            <button
-              onClick={handleAddToTrimList}
-              disabled={selectedTrimItem || selectedInterval.startTime == null}
-            >
-              Add to trim list
-            </button>
-            <button
-              onClick={handleTrimAndMerge}
-              disabled={selectedTrimItem || trimList.length === 0}
-            >
-              Trim Video
-            </button>
-          </div>
-          <div className="progress-bar-wrapper">
-            <>
-              {message && <p>{message}</p>}
-              <p>
-                {`Progress: ${
-                  progressCondition > 0 && progressCondition <= 100
-                    ? progressCondition.toFixed(0)
-                    : 0
+          <VideoTimelinePicker
+            list={trimList}
+            videoDuration={videoRuntime}
+            setSelectedInterval={setSelectedInterval}
+            updateTime={handleUpdateTime}
+            selectedTrim={selectedTrimItem}
+          />
+        </div>
+        <div className="display-flex">
+          {trimList.map((item, index) => {
+            return (
+              <div
+                className={`trimmed-video-box ${
+                  item.id === selectedTrimItem?.id ? "selected-video-box" : null
                 }`}
-                %
-              </p>
-              <Line
-                percent={progressCondition}
-                strokeWidth={8}
-                strokeColor="#32a852"
-                trailWidth={8}
-                trailColor="#32a85288"
-              />
-            </>
-          </div>
+                key={`${item.startTime + item.endTime}-${index}`}
+              >
+                <span
+                  className="flex-center"
+                  onClick={() => handlePlayTrimmedPart(item)}
+                >
+                  <img
+                    alt="play icon"
+                    src={item.id === selectedTrimItem?.id ? pause : play}
+                  />
+                  <p className="m-0">Trim No: {item.id + 1}</p>
+                </span>
+                <img
+                  alt="cross icon"
+                  className="cross-icon"
+                  src={CrossIcon}
+                  width={25}
+                  height={25}
+                  onClick={() => handleRemoveItem(item.id)}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div className="video-btn-wrapper">
+          <button
+            onClick={handleAddToTrimList}
+            disabled={selectedTrimItem || selectedInterval.startTime == null}
+          >
+            Add to trim list
+          </button>
+          <button
+            onClick={handleTrimAndMerge}
+            disabled={selectedTrimItem || trimList.length === 0}
+          >
+            Trim Video
+          </button>
+        </div>
+        <div className="progress-bar-wrapper">
+          <>
+            {message && <p>{message}</p>}
+            <p>
+              {`Progress: ${
+                progressCondition > 0 && progressCondition <= 100
+                  ? progressCondition.toFixed(0)
+                  : 0
+              }`}
+              %
+            </p>
+            <Line
+              percent={progressCondition}
+              strokeWidth={8}
+              strokeColor="#32a852"
+              trailWidth={8}
+              trailColor="#32a85288"
+            />
+          </>
         </div>
       </div>
     </div>
