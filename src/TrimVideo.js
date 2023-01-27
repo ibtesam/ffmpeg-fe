@@ -10,6 +10,7 @@ import { utilService } from "./utils";
 import VideoTimelinePicker from "./VideoTimelinePicker";
 
 import "./App.css";
+import WebcamStreamCapture from "./VideoRecorder";
 
 const { convertSeconds, getMergeVideoSeconds } = utilService;
 
@@ -339,6 +340,10 @@ const TrimVideo = () => {
         </div>
       </div>
     </div>
+
+    // <div>
+    //   <WebcamStreamCapture />
+    // </div>
   );
 };
 
