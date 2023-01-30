@@ -16,7 +16,7 @@
     "react-bootstrap": "^2.7.0",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
-    "react-video-timelines-slider": "git+https://github.com/ibtesam/react-video-timelines-slider.git#commit-ish",
+    "react-video-timelines-slider": "^1.1.7",
     "react-webcam": "^7.0.1"
   },
   "scripts": {
