@@ -362,15 +362,14 @@ const App = () => {
           justifyContent: "space-evenly",
         }}
       >
-        {/* 
-          <video
-            controls
-            width={800}
-            height={450}
-            src={ogVideoSrc}
-            title="Original"
-          /> 
-        */}
+        <video
+          controls
+          width={800}
+          height={450}
+          src={ogVideoSrc}
+          title="Original"
+        />
+
         <div className="video-wrapper">
           <video
             controls
@@ -459,7 +458,7 @@ const App = () => {
         </div>
       </div>
 
-      {/* <div className="button-wrapper">
+      <div className="button-wrapper">
         <div>
           <button onClick={doTranscode}>Start</button>
           {underProcess === VIDEO_ENUMS.TRANSCODE && (
@@ -550,7 +549,7 @@ const App = () => {
             </>
           )}
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

@@ -158,3 +158,26 @@ video {
   padding: 90px 0;
   background-color: #00ff3782;
 }
+
+.w-200 {
+  width: 200px !important;
+}
+.mv-20 {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+.recorder-screen {
+  opacity: 0;
+  transform: translateY(-100px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.recorder-screen.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.recorder-screen.hide {
+  opacity: 0;
+  transform: translateY(-100px);
+}

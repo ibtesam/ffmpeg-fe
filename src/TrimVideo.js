@@ -42,6 +42,7 @@ const TrimVideo = () => {
   const [mergedVideoSeconds, setMergedSeconds] = useState(1);
   const [videoTotalDuration, setVideoDuration] = useState(0);
   const [selectedTrimItem, setSelectedTrimItem] = useState(null);
+  const [recordVideo, setRecordVideo] = useState(false);
 
   useEffect(() => {
     const LoadFFmpegWasm = async () => {
@@ -109,6 +110,28 @@ const TrimVideo = () => {
         seconds: videoDuration.seconds,
       };
     });
+    if (!video) return;
+  };
+
+  const handleLoadVideo = (videoUrl) => {
+    const video = videoEl.current;
+    video.src = URL.createObjectURL(new Blob(videoUrl, { type: "video/webm" }));
+    video.currentTime = 86400;
+    setTimeout(() => {
+      video.currentTime = 0;
+
+      setVideoDuration(video.duration);
+      const videoDuration = convertSeconds(video.duration);
+      setVideoRuntime((prev) => {
+        return {
+          ...prev,
+          hours: videoDuration.hours,
+          minutes: videoDuration.minutes,
+          seconds: videoDuration.seconds,
+        };
+      });
+    }, 1000);
+
     if (!video) return;
   };
 
@@ -241,6 +264,22 @@ const TrimVideo = () => {
   return (
     <div className="container">
       <div className="video-wrapper">
+        <div className={`recorder-screen ${recordVideo == true && "visible"}`}>
+          {recordVideo && (
+            <WebcamStreamCapture
+              loadData={handleLoadVideo}
+            />
+          )}
+        </div>
+        <div className="mv-20">
+          <button
+            className="w-200"
+            onClick={() => setRecordVideo((prev) => !prev)}
+          >
+            {!recordVideo ? "Show Video Recorder" : "Hide Video recorder"}
+          </button>
+        </div>
+
         <video
           controls
           width={800}
@@ -340,10 +379,6 @@ const TrimVideo = () => {
         </div>
       </div>
     </div>
-
-    // <div>
-    //   <WebcamStreamCapture />
-    // </div>
   );
 };
 
