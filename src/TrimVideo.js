@@ -1,6 +1,7 @@
-import { Line } from "rc-progress";
+import { Line, Circle } from "rc-progress";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import S3FileUpload from "react-s3";
 
 import play from "./play.svg";
 import pause from "./pause.svg";
@@ -11,6 +12,13 @@ import VideoTimelinePicker from "./VideoTimelinePicker";
 
 import "./App.css";
 import WebcamStreamCapture from "./VideoRecorder";
+
+const config = {
+  bucketName: "frnz-bucket",
+  region: "us-east-1",
+  accessKeyId: "AKIATHTCP7KXZ73ODDHP",
+  secretAccessKey: "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",
+};
 
 const { convertSeconds, getMergeVideoSeconds } = utilService;
 
@@ -42,7 +50,10 @@ const TrimVideo = () => {
   const [mergedVideoSeconds, setMergedSeconds] = useState(1);
   const [videoTotalDuration, setVideoDuration] = useState(0);
   const [selectedTrimItem, setSelectedTrimItem] = useState(null);
-  const [recordVideo, setRecordVideo] = useState(false);
+  const [recordVideo, setRecordVideo] = useState(true);
+  const [showEdit, setShowEdit] = useState(false);
+  const [url, setUrl] = useState(undefined);
+  const [uploadFile, setUploadFile] = useState();
 
   useEffect(() => {
     const LoadFFmpegWasm = async () => {
@@ -75,7 +86,11 @@ const TrimVideo = () => {
     setVideoSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
     );
-    setMessage(null);
+
+    setMessage("Uploading");
+    S3FileUpload.uploadFile(uploadFile, config)
+      .then((data) => setMessage("Upload Successfully"))
+      .catch((err) => setMessage("Upload failed"));
   };
 
   const trimVideo = async (startTime = "00:00:00", endTime = "00:00:05") => {
@@ -94,6 +109,7 @@ const TrimVideo = () => {
     );
     const data = ffmpeg.FS("readFile", "output1.mp4");
     setMessage(null);
+    setUploadFile(new Blob([data.buffer], { type: "video/mp4" }));
     return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
   };
 
@@ -113,27 +129,42 @@ const TrimVideo = () => {
     if (!video) return;
   };
 
-  const handleLoadVideo = (videoUrl) => {
-    const video = videoEl.current;
-    video.src = URL.createObjectURL(new Blob(videoUrl, { type: "video/webm" }));
-    video.currentTime = 86400;
-    setTimeout(() => {
-      video.currentTime = 0;
+  const handleLoadVideo = useCallback(
+    (videoUrl) => {
+      setShowEdit(true);
+      setUrl(videoUrl);
+      if (showEdit) {
+        setUploadFile(new Blob(url, { type: "video/mp4" }));
+        setVideoSrc(URL.createObjectURL(new Blob(url, { type: "video/mp4" })));
+        const video = videoEl.current;
+        video.src = URL.createObjectURL(new Blob(url, { type: "video/mp4" }));
+        video.currentTime = 86400;
 
-      setVideoDuration(video.duration);
-      const videoDuration = convertSeconds(video.duration);
-      setVideoRuntime((prev) => {
-        return {
-          ...prev,
-          hours: videoDuration.hours,
-          minutes: videoDuration.minutes,
-          seconds: videoDuration.seconds,
-        };
-      });
-    }, 1000);
+        setTimeout(() => {
+          video.currentTime = 0;
+          setVideoDuration(video.duration);
+          const videoDuration = convertSeconds(video.duration);
+          setVideoRuntime((prev) => {
+            return {
+              ...prev,
+              hours: videoDuration.hours,
+              minutes: videoDuration.minutes,
+              seconds: videoDuration.seconds,
+            };
+          });
+        }, 1000);
+      }
 
-    if (!video) return;
-  };
+      if (!video) return;
+    },
+    [showEdit, url]
+  );
+
+  useEffect(() => {
+    if (showEdit) {
+      handleLoadVideo(url);
+    }
+  }, [handleLoadVideo, showEdit, url]);
 
   const handleAddToTrimList = () => {
     if (selectedInterval.startTime != null) {
@@ -263,120 +294,130 @@ const TrimVideo = () => {
 
   return (
     <div className="container">
+      <div className="header">
+        {showEdit ? "Editing Video" : "Recording Video"}
+      </div>
       <div className="video-wrapper">
-        <div className={`recorder-screen ${recordVideo == true && "visible"}`}>
-          {recordVideo && (
-            <WebcamStreamCapture
-              loadData={handleLoadVideo}
-            />
-          )}
-        </div>
-        <div className="mv-20">
-          <button
-            className="w-200"
-            onClick={() => setRecordVideo((prev) => !prev)}
-          >
-            {!recordVideo ? "Show Video Recorder" : "Hide Video recorder"}
-          </button>
-        </div>
-
-        <video
-          controls
-          width={800}
-          height={450}
-          ref={videoEl}
-          src={videoSrc}
-          title="Processed"
-          onTimeUpdate={handleListenTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-        />
-        <div className="progress-timeline-wrapper">
+        {!showEdit ? (
           <div
-            style={{
-              marginLeft: `${
-                selectedTrimItem
-                  ? (selectedTrimItem.startingSeconds / videoTotalDuration) *
-                    100
-                  : 0
-              }%`,
-              width: `${sliderPosition}%`,
-              backgroundColor: sliderColor,
-            }}
-            className="custom-progress"
-          />
-          <VideoTimelinePicker
-            list={trimList}
-            videoDuration={videoRuntime}
-            setSelectedInterval={setSelectedInterval}
-            updateTime={handleUpdateTime}
-            selectedTrim={selectedTrimItem}
-          />
-        </div>
-        <div className="display-flex">
-          {trimList.map((item, index) => {
-            return (
-              <div
-                className={`trimmed-video-box ${
-                  item.id === selectedTrimItem?.id ? "selected-video-box" : null
-                }`}
-                key={`${item.startTime + item.endTime}-${index}`}
-              >
-                <span
-                  className="flex-center"
-                  onClick={() => handlePlayTrimmedPart(item)}
-                >
-                  <img
-                    alt="play icon"
-                    src={item.id === selectedTrimItem?.id ? pause : play}
-                  />
-                  <p className="m-0">Trim No: {item.id + 1}</p>
-                </span>
-                <img
-                  alt="cross icon"
-                  className="cross-icon"
-                  src={CrossIcon}
-                  width={25}
-                  height={25}
-                  onClick={() => handleRemoveItem(item.id)}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <div className="video-btn-wrapper">
-          <button
-            onClick={handleAddToTrimList}
-            disabled={selectedTrimItem || selectedInterval.startTime == null}
+            className={`recorder-screen ${recordVideo === true && "visible"}`}
           >
-            Add to trim list
-          </button>
-          <button
-            onClick={handleTrimAndMerge}
-            disabled={selectedTrimItem || trimList.length === 0}
-          >
-            Trim Video
-          </button>
-        </div>
-        <div className="progress-bar-wrapper">
-          <>
-            {message && <p>{message}</p>}
-            <p>
-              {`Progress: ${
-                progressCondition > 0 && progressCondition <= 100
-                  ? progressCondition.toFixed(0)
-                  : 0
-              }`}
-              %
-            </p>
-            <Line
-              percent={progressCondition}
-              strokeWidth={8}
-              strokeColor="#32a852"
-              trailWidth={8}
-              trailColor="#32a85288"
+            {recordVideo && (
+              <WebcamStreamCapture
+                // blob={(c) => setUrl(c) }
+                loadData={handleLoadVideo}
+              />
+            )}
+          </div>
+        ) : (
+          <div className="vidoe_edit_wrapper">
+            {!!progressCondition ? <div className="video__Wrapper" /> : null}
+            <video
+              controls
+              width={800}
+              height={450}
+              ref={videoEl}
+              src={videoSrc}
+              title="Processed"
+              onTimeUpdate={handleListenTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
             />
-          </>
-        </div>
+            <div className="progress-timeline-wrapper">
+              <div
+                style={{
+                  marginLeft: `${
+                    selectedTrimItem
+                      ? (selectedTrimItem.startingSeconds /
+                          videoTotalDuration) *
+                        100
+                      : 0
+                  }%`,
+                  width: `${sliderPosition}%`,
+                  backgroundColor: sliderColor,
+                }}
+                className="custom-progress"
+              />
+              <VideoTimelinePicker
+                list={trimList}
+                videoDuration={videoRuntime}
+                setSelectedInterval={setSelectedInterval}
+                updateTime={handleUpdateTime}
+                selectedTrim={selectedTrimItem}
+              />
+            </div>
+            <div className="display-flex">
+              {trimList.map((item, index) => {
+                return (
+                  <div
+                    className={`trimmed-video-box ${
+                      item.id === selectedTrimItem?.id
+                        ? "selected-video-box"
+                        : null
+                    }`}
+                    key={`${item.startTime + item.endTime}-${index}`}
+                  >
+                    <span
+                      className="flex-center"
+                      onClick={() => handlePlayTrimmedPart(item)}
+                    >
+                      <img
+                        alt="play icon"
+                        src={item.id === selectedTrimItem?.id ? pause : play}
+                      />
+                      <p className="m-0">Trim No: {item.id + 1}</p>
+                    </span>
+                    <img
+                      alt="cross icon"
+                      className="cross-icon"
+                      src={CrossIcon}
+                      width={25}
+                      height={25}
+                      onClick={() => handleRemoveItem(item.id)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="video-btn-wrapper">
+              <button
+                onClick={handleAddToTrimList}
+                disabled={
+                  selectedTrimItem || selectedInterval.startTime == null
+                }
+              >
+                Add to trim list
+              </button>
+              <button
+                onClick={handleTrimAndMerge}
+                disabled={selectedTrimItem || trimList.length === 0}
+              >
+                Trim Video
+              </button>
+            </div>
+            {!!progressCondition ? (
+              <div className="progress-bar-wrapper">
+                <>
+                  <Circle
+                    percent={progressCondition}
+                    strokeWidth={4}
+                    strokeColor="#32a852"
+                    trailWidth={4}
+                    trailColor="#32a85288"
+                  />
+                  {message && <p>{message}</p>}
+                  <p>
+                    {` ${
+                      progressCondition > 0 && progressCondition <= 100
+                        ? progressCondition.toFixed(0)
+                        : 0
+                    }`}
+                    %
+                  </p>
+                </>
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

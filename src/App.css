@@ -5,34 +5,35 @@
   height: 87vh;
 }
 button {
-  width: 150px;
-  font-size: 1em;
+  width: 180px;
+  font-size: 1.1em;
+  font-weight: 600;
   padding: 15px;
-  background-color: #fff;
-  border-radius: 5px;
-  border: 2px solid #00ff3782;
+  background-color: #B4A8EB;
+  border-radius: 2px;
+  border: 2px solid #B4A8EB;
   cursor: pointer;
   transition: 0.25s;
 }
 button:hover {
-  width: 150px;
-  font-size: 1em;
+  width: 180px;
+  font-size: 1.1em;
   padding: 15px;
-  background-color: #00ff37a2;
-  color: #fff;
-  border-radius: 5px;
-  border: 2px solid #00ff37a2;
+  background-color: #B4A8EB;
+  border-radius: 2px;
+  border: 2px solid #8f82c7;
   cursor: pointer;
 }
 button:disabled {
-  background-color: #fff;
-  color: rgb(165, 165, 165);
+  background-color: #c9c9c9;
+  color: rgb(139 139 139);
+  border-color: #c9c9c9;
   cursor: not-allowed;
 }
 
 video {
   border-radius: 10px;
-  border: 1px solid #00ff37a2;
+  padding-bottom: 30px;
 }
 .App-logo {
   height: 40vmin;
@@ -70,7 +71,8 @@ video {
 }
 
 .video-wrapper {
-  width: 800px;
+  margin: auto;
+  padding-top:30px;
 }
 
 .react_time_range__time_range_container {
@@ -96,6 +98,9 @@ video {
 .react_time_range__track__disabled {
   background: rgba(214, 0, 11, 0.5) !important;
   border: 0 !important;
+}
+.react_time_range__tick_label{
+  color: #fff;
 }
 
 .trimmed-video-box {
@@ -153,10 +158,19 @@ video {
 .container {
   display: flex;
   margin: 0 auto;
-  justify-content: space-evenly;
-  text-align: center;
-  padding: 90px 0;
-  background-color: #00ff3782;
+  flex-direction: column;
+  background-color: #15092A;
+  min-height: 100vh;
+}
+
+.header {
+  background-color: #3C2B5B;
+  height: 80px;
+  color:white;
+  display:flex;
+  align-items: center;
+  padding-left: 30px;
+  font-size: 30px;
 }
 
 .w-200 {
@@ -180,4 +194,86 @@ video {
 .recorder-screen.hide {
   opacity: 0;
   transform: translateY(-100px);
+}
+
+.recorder_container{
+  margin:  auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.button__wrapper {
+  display: flex;
+}
+.finish_btn{
+margin-left: 20px;
+}
+
+.video_duration{
+  position: absolute;
+  bottom: 79px;
+  right: 20px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  width:90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;  
+}
+.video_duration span {
+  color: red;
+  margin-right: 5px;
+  font-weight: 700;
+  
+}
+.webcam_video {
+  position: relative;
+  
+}
+
+.react_time_range__rail__inner {
+  height: 40px;
+  border-radius: 4px;
+  background-color: rgb(60 43 91);
+}
+.react_time_range__handle_container {
+  height: 30px;
+}
+.react_time_range__handle_container, .react_time_range__handle_container__disabled {
+  height:30px
+}
+
+.react_time_range__track, .react_time_range__track__disabled{
+  height:40px
+}
+
+.vidoe_edit_wrapper{
+  position: relative;
+  ;
+}
+
+.progress-bar-wrapper{
+  height: 100px;
+  width: 100px;
+  position: absolute;
+  top:100px;
+  left:45%;
+  text-align:center
+}
+
+.video__Wrapper {
+  height: 450px;
+  width: 800px;
+  position: absolute;
+  background-color: #141414a6;
+}
+
+.progress-bar-wrapper p{
+  color: #fff;
+  
 }
