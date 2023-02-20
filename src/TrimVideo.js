@@ -394,7 +394,7 @@ const TrimVideo = () => {
                 Trim Video
               </button>
             </div>
-            {!!progressCondition ? (
+            {progressCondition > 0 && progressCondition < 100  ? (
               <div className="progress-bar-wrapper">
                 <>
                   <Circle
