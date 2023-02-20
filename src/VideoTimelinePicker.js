@@ -81,7 +81,7 @@ const VideoTimelinePicker = ({
         onUpdateCallback={onUpdateCallback}
         onChangeCallback={onChangeCallback}
         formatTick={(ms) => format(ms, "HH:mm:ss")}
-        formatTooltip={(ms) => format(ms, "HH:mm:ss")}
+        formatTooltip={(ms) => format(ms, "HH:mm:ss.SSSS")}
       />
 
       {error.current && (
