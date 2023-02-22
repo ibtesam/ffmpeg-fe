@@ -51,8 +51,8 @@ const VideoTimelinePicker = ({
       setSelectedInterval({
         start,
         end,
-        startTime: format(start, "HH:mm:ss"),
-        endTime: format(end, "HH:mm:ss"),
+        startTime: format(start, "HH:mm:ss.SSSS"),
+        endTime: format(end, "HH:mm:ss.SSSS"),
         startingSeconds: getSeconds(start),
         endingSeconds: getSeconds(end),
       });
@@ -80,7 +80,7 @@ const VideoTimelinePicker = ({
         disabledIntervals={list}
         onUpdateCallback={onUpdateCallback}
         onChangeCallback={onChangeCallback}
-        formatTick={(ms) => format(ms, "HH:mm:ss")}
+        formatTick={(ms) => format(ms, "HH:mm:ss.SSSS")}
         formatTooltip={(ms) => format(ms, "HH:mm:ss.SSSS")}
       />
 
