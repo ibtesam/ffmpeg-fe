@@ -36,8 +36,8 @@ const VideoTimelinePicker = ({
     if (e.time[0] != "Invalid Date" && selectedTrim == null) {
       setDisabledTrack(e.time[0]);
       if (
-        moment(disabledTrack).format("HH:mm:ss") !=
-        moment(e.time[0]).format("HH:mm:ss")
+        moment(disabledTrack).format("HH:mm:ss.SSSS") !=
+        moment(e.time[0]).format("HH:mm:ss.SSSS")
       ) {
         updateTime(getSeconds(e.time[0]));
       } else updateTime(getSeconds(e.time[1]));
@@ -51,8 +51,8 @@ const VideoTimelinePicker = ({
       setSelectedInterval({
         start,
         end,
-        startTime: format(start, "HH:mm:ss"),
-        endTime: format(end, "HH:mm:ss"),
+        startTime: format(start, "HH:mm:ss.SSSS"),
+        endTime: format(end, "HH:mm:ss.SSSS"),
         startingSeconds: getSeconds(start),
         endingSeconds: getSeconds(end),
       });
@@ -80,8 +80,8 @@ const VideoTimelinePicker = ({
         disabledIntervals={list}
         onUpdateCallback={onUpdateCallback}
         onChangeCallback={onChangeCallback}
-        formatTick={(ms) => format(ms, "HH:mm:ss")}
-        formatTooltip={(ms) => format(ms, "HH:mm:ss.SSS")}
+        formatTick={(ms) => format(ms, "HH:mm:ss.SSSS")}
+        formatTooltip={(ms) => format(ms, "HH:mm:ss.SSSS")}
       />
 
       {error.current && (

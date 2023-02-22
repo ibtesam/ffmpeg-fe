@@ -6,7 +6,6 @@ import TrimVideo from "./TrimVideo";
 
 ReactDOM.render(
   <React.StrictMode>
-    {/* <App /> */}
     <TrimVideo />
   </React.StrictMode>,
   document.getElementById("root")
