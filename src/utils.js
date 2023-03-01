@@ -27,12 +27,12 @@ function convertSeconds(seconds) {
 function timeStringToSeconds(time) {
   time = time.split(":");
   const seconds =
-    parseInt(time[0]) * 3600 + parseInt(time[1]) * 60 + parseInt(time[2]);
+    parseInt(time[0]) * 3600 + parseInt(time[1]) * 60 + parseFloat(time[2]);
   return seconds;
 }
 
 function getSeconds(time) {
-  return timeStringToSeconds(moment(time).format("HH:mm:ss"));
+  return timeStringToSeconds(moment(time).format("HH:mm:ss.SSSS"));
 }
 
 function getMergeVideoSeconds(list) {

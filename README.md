@@ -1,2 +1,2 @@
 # ffmpeg-fe
-The project is about using FFMPEG to perform different types of processing on  given video.
+An implementation of FFmpeg library in React for Frontend processing on recorded videos.
