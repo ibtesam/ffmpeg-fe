@@ -1,16 +1,23 @@
-import { Line } from "rc-progress";
+import S3FileUpload from "react-s3";
+import { Circle } from "rc-progress";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
+import "./App.css";
 import play from "./play.svg";
 import pause from "./pause.svg";
 import video from "./video4.mp4";
 import CrossIcon from "./cross.svg";
 import { utilService } from "./utils";
+import WebcamStreamCapture from "./VideoRecorder";
 import VideoTimelinePicker from "./VideoTimelinePicker";
 
-import "./App.css";
-import WebcamStreamCapture from "./VideoRecorder";
+const config = {
+  bucketName: "",
+  region: "",
+  accessKeyId: "",
+  secretAccessKey: "",
+};
 
 const { convertSeconds, getMergeVideoSeconds } = utilService;
 
@@ -265,11 +272,7 @@ const TrimVideo = () => {
     <div className="container">
       <div className="video-wrapper">
         <div className={`recorder-screen ${recordVideo == true && "visible"}`}>
-          {recordVideo && (
-            <WebcamStreamCapture
-              loadData={handleLoadVideo}
-            />
-          )}
+          {recordVideo && <WebcamStreamCapture loadData={handleLoadVideo} />}
         </div>
         <div className="mv-20">
           <button
