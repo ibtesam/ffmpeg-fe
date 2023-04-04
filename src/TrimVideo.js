@@ -52,48 +52,109 @@ const TrimVideo = () => {
   }, [ffmpeg]);
 
   // ** COMMANDS **
+  // const mergeVideos = async (files) => {
+  //   setMessage("Merging...");
+  //   const inputPaths = [];
+  //   for (const file of files) {
+  //     ffmpeg.FS("writeFile", file.name, await fetchFile(file.file));
+  //     inputPaths.push(`file ${file.name}`);
+  //   }
+  //   ffmpeg.FS("writeFile", "concat_list.txt", inputPaths.join("\n"));
+  //   await ffmpeg.run(
+  //     "-f",
+  //     "concat",
+  //     "-safe",
+  //     "0",
+  //     "-i",
+  //     "concat_list.txt",
+  //     "-vcodec",
+  //     "copy",
+  //     "output.mp4"
+  //   );
+  //   const data = ffmpeg.FS("readFile", "output.mp4");
+  //   setVideoSrc(
+  //     URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
+  //   );
+  //   setMessage(null);
+  // };
+
   const mergeVideos = async (files) => {
-    setMessage("Merging...");
-    const inputPaths = [];
-    for (const file of files) {
-      ffmpeg.FS("writeFile", file.name, await fetchFile(file.file));
-      inputPaths.push(`file ${file.name}`);
+    const fileLength = files.length;
+    let inputPaths = [];
+    let videoChunks = "";
+    let audioChunks = "";
+    console.log("inputPaths before", inputPaths);
+
+    for (let i = 0; i < fileLength; i++) {
+      ffmpeg.FS("writeFile", files[i].name, await fetchFile(files[i].file));
+      inputPaths.push("-i");
+      inputPaths.push(files[i].name);
+      videoChunks += `[${i}:v]setpts=PTS-STARTPTS[v${i}];`;
+      audioChunks += `[v${i}][${i}:a]`;
     }
-    ffmpeg.FS("writeFile", "concat_list.txt", inputPaths.join("\n"));
+
     await ffmpeg.run(
-      "-f",
-      "concat",
-      "-safe",
+      ...inputPaths,
+      "-filter_complex",
+      `${videoChunks}${audioChunks}concat=n=${fileLength}:v=1:a=1[v][a]`,
+      "-map",
+      "[v]",
+      "-map",
+      "[a]",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "ultrafast",
+      "-crf",
+      "18",
+      "-movflags",
+      "+faststart",
+      "-vsync",
       "0",
-      "-i",
-      "concat_list.txt",
-      "-vcodec",
-      "copy",
-      "output.mp4"
+      "mergedOutput.mp4"
     );
-    const data = ffmpeg.FS("readFile", "output.mp4");
-    setVideoSrc(
-      URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
-    );
-    setMessage(null);
+
+    const data = ffmpeg.FS("readFile", "mergedOutput.mp4");
+    return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
   };
 
-  const trimVideo = async (startTime = "00:00:00", endTime = "00:00:05") => {
-    setMessage("Trimming...");
-    ffmpeg.FS("writeFile", "input.mp4", await fetchFile(videoSrc));
+  // const trimVideo = async (startTime = "00:00:00", endTime = "00:00:05") => {
+  //   setMessage("Trimming...");
+  //   ffmpeg.FS("writeFile", "input.mp4", await fetchFile(videoSrc));
+  //   await ffmpeg.run(
+  //     "-ss",
+  //     startTime,
+  //     "-to",
+  //     endTime,
+  //     "-i",
+  //     "input.mp4",
+  //     "-c",
+  //     "copy",
+  //     "output1.mp4"
+  //   );
+  //   const data = ffmpeg.FS("readFile", "output1.mp4");
+  //   setMessage(null);
+  //   return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
+  // };
+
+  const trimVideo = async (
+    startTime = "00:00:00",
+    endTime = "00:00:05",
+    index
+  ) => {
+    ffmpeg.FS("writeFile", `input${index}.mp4`, await fetchFile(videoSrc));
     await ffmpeg.run(
       "-ss",
       startTime,
       "-to",
       endTime,
       "-i",
-      "input.mp4",
+      `input${index}.mp4`,
       "-c",
       "copy",
-      "output1.mp4"
+      `trimmedOutput${index}.mp4`
     );
-    const data = ffmpeg.FS("readFile", "output1.mp4");
-    setMessage(null);
+    const data = ffmpeg.FS("readFile", `trimmedOutput${index}.mp4`);
     return URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
   };
 
@@ -265,11 +326,7 @@ const TrimVideo = () => {
     <div className="container">
       <div className="video-wrapper">
         <div className={`recorder-screen ${recordVideo == true && "visible"}`}>
-          {recordVideo && (
-            <WebcamStreamCapture
-              loadData={handleLoadVideo}
-            />
-          )}
+          {recordVideo && <WebcamStreamCapture loadData={handleLoadVideo} />}
         </div>
         <div className="mv-20">
           <button
