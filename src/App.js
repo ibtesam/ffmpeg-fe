@@ -60,8 +60,16 @@ const App = () => {
 
   const doTranscode = async () => {
     setUnderProcess(VIDEO_ENUMS.TRANSCODE);
-    ffmpeg.FS("writeFile", "test.txt", await fetchFile("/video4.mp4"));
-    await ffmpeg.run("-i", "test.txt", "-vcodec", "copy", "output.mp4");
+    ffmpeg.FS("writeFile", "test.webm", await fetchFile("/video4.mp4"));
+    await ffmpeg.run(
+      "-i",
+      "test.webm",
+      "-preset",
+      "ultrafast",
+      "-vcodec",
+      "copy",
+      "output.mp4"
+    );
     const data = ffmpeg.FS("readFile", "output.mp4");
     setOgVideoSrc(
       URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
